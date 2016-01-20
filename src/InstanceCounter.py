@@ -1,9 +1,9 @@
-from SparqlInterface.src.ClientFactory import make_client
-from SparqlInterface.src.Interfaces.AbstractClient import AbstractClient
-from SQLiteStore.InstanceCountStore import InstanceCountStore
-from Utilities.Logger import log
-from Utilities.Utilities import log_progress
-from NTripleLineParser.src.NTripleLineParser import NTripleLineParser
+from .SparqlInterface.src.ClientFactory import make_client
+from .SparqlInterface.src.Interfaces.AbstractClient import AbstractClient
+from .SQLiteStore.InstanceCountStore import InstanceCountStore
+from .Utilities.Logger import log
+from .Utilities.Utilities import log_progress
+from .NTripleLineParser.src.NTripleLineParser import NTripleLineParser
 from sqlite3 import IntegrityError
 from datetime import datetime
 import gevent
