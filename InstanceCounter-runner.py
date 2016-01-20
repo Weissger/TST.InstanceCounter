@@ -1,29 +1,28 @@
 import click
-from src.TypeSimilarityTools import TypeSimilarityTools
-from datetime import datetime
+from src.InstanceCounter import InstanceCounter
 
 
 @click.command()
-@click.option('--type1', '-t1', default=None)
-@click.option('--type2', '-t2', default=None)
-@click.option('--force', '-f', default=False)
 @click.option('--server', '-s', default="http://localhost:8585/bigdata/sparql",
               help='Uri to the sparql endpoint which stores the RDFS SubClass Information.')
 @click.option('--user', '-u', default="admin", help='User for the sparql endpoint.')
 @click.option('--password', '-p', default="dev98912011", help='Password for the sparql endpoint.')
 @click.option('--n-processes', '-x', default="11",
               help='Number of processes to spawn simultaneously.')
+@click.option('--file', '-f', default=None,
+              help='Input file with classes to get counts for.')
+@click.option('--target', '-t', default="./data/instance_count.db",
+              help='Output sqlite db to save data into.')
 @click.option('--log-level', '-l', default="WARN")
-@click.option('--sim-store', '-ss', default="data/similarities.db")
-@click.option('--instance-count-store', '-ics', default="data/instance_count.db")
-def main(server, user, password, type1, type2, force, log_level, n_processes, sim_store, count_store):
-    if type1 is None or type2 is None:
-        return 2
-    similarity_tool = TypeSimilarityTools(server=server, user=user, password=password, n_processes=int(n_processes),
-                                   log_level=log_level, similarity_store=sim_store, instance_count_store=count_store)
-    cur_time = datetime.now()
-    print(similarity_tool.get_type_similarity(type1, type2, force_calc=force))
-    print("Time : {}".format(datetime.now() - cur_time))
+def main(server, user, password, log_level, n_processes, file, target):
+    counter = InstanceCounter(server=server, sqlite_db=target, user=user, password=password,
+                              n_processes=int(n_processes), log_level=log_level)
+
+    if type(file) is list:
+        for f in file:
+            counter.count_all_instances(f)
+    else:
+        counter.count_all_instances(file)
 
 
 if __name__ == '__main__':
