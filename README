@@ -1,0 +1,10 @@
+=========================
+ Instance Counter
+=========================
+
+Command line tool to generate a sqlite store containing the instance count of rdf classes on a server
+
+Authors
+=======
+
+* Thomas Weißgerber
