@@ -1,12 +1,15 @@
 from .SparqlInterface.src.ClientFactory import make_client
 from .SparqlInterface.src.Interfaces.AbstractClient import AbstractClient
 from .SQLiteStore.InstanceCountStore import InstanceCountStore
+from .PickleStore.PickleStore import PickleStore
+from .FileStore.FileStore import FileStore
 from .Utilities.Logger import log
 from .Utilities.Utilities import log_progress
 from .NTripleLineParser.src.NTripleLineParser import NTripleLineParser
 from sqlite3 import IntegrityError
 from datetime import datetime
 import gevent
+import random
 
 
 def get_count(in_type=None, server=None, store=None):
@@ -18,7 +21,9 @@ def get_count(in_type=None, server=None, store=None):
     :type store: InstanceCountStore
     :return:
     """
-    return server.count_instances(in_type)
+    #return server.count_instances(in_type)
+    r = random.randint(0, 100000)
+    return r
 
 
 class InstanceCounter(object):
@@ -26,7 +31,9 @@ class InstanceCounter(object):
                  log_level="INFO"):
         log.setLevel(log_level)
         self.nt_parser = NTripleLineParser(" ")
-        self.__store = InstanceCountStore(sqlite_db)
+        #self.__store = FileStore("../instance_counts/")
+        #self.__store = InstanceCountStore(sqlite_db)
+        self.__store = PickleStore()
         self.__server = make_client(server, user, password)
         self.number_of_processes = n_processes
 
@@ -42,6 +49,7 @@ class InstanceCounter(object):
 
     def use_file_for_classes(self, f):
         with open(f) as input_file:
+            threads = []
             tmp_classes = set()
 
             for line_num, line in enumerate(input_file):
@@ -56,19 +64,21 @@ class InstanceCounter(object):
                     tmp_classes = set()
                     gevent.joinall(threads)
                     for t in threads:
-                        try:
-                            self.__store.store_instance_count(t.value[0], t.value[1])
-                        except IntegrityError as e:
-                            pass
+                        if hasattr(t, 'value') and type(t.value) is tuple:
+                            try:
+                                self.__store.store_instance_count(t.value[0], t.value[1])
+                            except IntegrityError as e:
+                                pass
                     threads = []
             if len(tmp_classes) > 0:
                 gevent.joinall(threads)
                 for t in threads:
-                    if t.value:
+                    if hasattr(t, 'value') and type(t.value) is tuple:
                         try:
                             self.__store.store_instance_count(t.value[0], t.value[1])
                         except IntegrityError as e:
                             pass
+        self.__store.dump("data/instance_count.data")
 
     def use_service_for_classes(self):
         log.critical("Counting with classes from service currently not supported.")

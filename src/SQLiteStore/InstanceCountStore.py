@@ -5,7 +5,7 @@ import functools
 
 class InstanceCountStore(object):
     def __init__(self, sqlite_path):
-        self.__connection = sqlite3.connect(sqlite_path, timeout=99999999999999999999999999)
+        self.__connection = sqlite3.connect(sqlite_path, timeout=10)
         self.__connection.execute("""
             CREATE TABLE IF NOT EXISTS instance_counts (type, instance_count INT, PRIMARY KEY(type))
             """)
